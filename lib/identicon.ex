@@ -5,15 +5,29 @@ defmodule Identicon do
     |> hash_input
     |> pick_color
     |> build_grid
+    |> filter_odd_squares
+  end
+
+  def filter_odd_squares(%Identicon.Image{grid: grid} = image)  do
+    grid = Enum.filter grid, fn({code, _index}) ->  # Enum.filter(grid, fn(square) -> end)
+      rem(code, 2) == 0 #remender operator or
+    end
+
+    %Identicon.Image{image | grid: grid}
   end
 
   def build_grid(%Identicon.Image{hex: hex} = image) do
-    hex
-    |> Enum.chunk_every(3)
+    grid = hex
+      |> Enum.chunk(3)
+      |> Enum.map(&mirror_rowHelper/1)
+      |> List.flatten
+      |> Enum.with_index
+
+      %Identicon.Image{image | grid: grid}
   end
 
   def mirror_rowHelper(row) do
-    [first, second | _tail] = row  # [145, 46, 200]
+    [first, second | _tail ] = row  # [145, 46, 200]
 
     row ++ [second, first]   # [145,46,200,46,145]
   end
